@@ -23,7 +23,7 @@ public class Main extends javax.swing.JFrame {
      */
     public Main() {
         initComponents();
-        String[] column = {"NIM", "Nama", "Tahun Masuk"};
+        String[] column = {"NIM", "Nama"};
         model = new DefaultTableModel(column, 0);
         tblMahasiswa.setModel(model);
 
@@ -38,7 +38,7 @@ public class Main extends javax.swing.JFrame {
             List<Mahasiswa> listMahasiswa = handler.readDB();
 
             for (Mahasiswa mhs : listMahasiswa) {
-                Object[] rowData = {mhs.nim, mhs.nama, mhs.tahunMasuk};
+                Object[] rowData = {mhs.nim, mhs.nama};
 
                 model.addRow(rowData);
             }
@@ -50,7 +50,6 @@ public class Main extends javax.swing.JFrame {
     private void cleanForm() {
         txtNama.setText("");
         txtNIM.setText("");
-        txtTahunMasuk.setText("");
     }
 
     /**
@@ -71,10 +70,9 @@ public class Main extends javax.swing.JFrame {
         btnDelete = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblMahasiswa = new javax.swing.JTable();
-        lblTahunMasuk = new javax.swing.JLabel();
-        txtTahunMasuk = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         lblNama.setText("Masukkan Nama");
 
@@ -121,8 +119,6 @@ public class Main extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(tblMahasiswa);
 
-        lblTahunMasuk.setText("Masukkan Tahun Masuk");
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -139,17 +135,15 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(80, 80, 80)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(lblNama)
-                                    .addComponent(lblNIM)
-                                    .addComponent(lblTahunMasuk))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(lblNIM))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 64, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(txtTahunMasuk, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                                    .addComponent(txtNIM)
-                                    .addComponent(txtNama))))))
+                                    .addComponent(txtNama, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                                    .addComponent(txtNIM))))))
                 .addGap(80, 80, 80))
         );
         layout.setVerticalGroup(
@@ -163,11 +157,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lblNIM)
                     .addComponent(txtNIM, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(16, 16, 16)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lblTahunMasuk)
-                    .addComponent(txtTahunMasuk, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(26, 26, 26)
+                .addGap(48, 48, 48)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSubmit)
                     .addComponent(btnEdit)
@@ -189,9 +179,8 @@ public class Main extends javax.swing.JFrame {
         try {
             String nim = txtNIM.getText();
             String nama = txtNama.getText();
-            int tahunMasuk = Integer.parseInt(txtTahunMasuk.getText());
 
-            Mahasiswa mhs = new Mahasiswa(nim, nama, tahunMasuk);
+            Mahasiswa mhs = new Mahasiswa(nim, nama);
             if (isEdit) {
                 boolean update = handler.updateDB(mhs);
                 if (update) {
@@ -201,7 +190,7 @@ public class Main extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(rootPane, "data berhasil diedit");
                 }
             } else {
-                Object[] newData = {mhs.nim, mhs.nama, mhs.tahunMasuk};
+                Object[] newData = {mhs.nim, mhs.nama};
                 boolean create = handler.createDB(mhs);
 
                 if (create) {
@@ -224,11 +213,9 @@ public class Main extends javax.swing.JFrame {
             int rowIndex = tblMahasiswa.getSelectedRow();
             String nim = model.getValueAt(rowIndex, 0).toString();
             String nama = model.getValueAt(rowIndex, 1).toString();
-            String tahunMasuk = model.getValueAt(rowIndex, 2).toString();
 
             txtNama.setText(nama);
             txtNIM.setText(nim);
-            txtTahunMasuk.setText(tahunMasuk);
 
             txtNIM.setEditable(false);
 
@@ -299,10 +286,8 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblNIM;
     private javax.swing.JLabel lblNama;
-    private javax.swing.JLabel lblTahunMasuk;
     private javax.swing.JTable tblMahasiswa;
     private javax.swing.JTextField txtNIM;
     private javax.swing.JTextField txtNama;
-    private javax.swing.JTextField txtTahunMasuk;
     // End of variables declaration//GEN-END:variables
 }

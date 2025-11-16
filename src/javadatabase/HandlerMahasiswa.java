@@ -20,11 +20,10 @@ public class HandlerMahasiswa {
     public static boolean createDB(Mahasiswa mhs) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "insert into mahasiswa (nim, nama, tahun_masuk) values (?, ?, ?)";
+            String sql = "insert into mahasiswa (nim, nama) values (?, ?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, mhs.nim);
             ps.setString(2, mhs.nama);
-            ps.setInt(3, mhs.tahunMasuk);
             ps.executeUpdate();
             System.out.println("Data untuk NIM " + mhs.nim + " berhasil ditambahkan.");
             conn.close();
@@ -46,8 +45,7 @@ public class HandlerMahasiswa {
             while (rs.next()) {
                 String resultNim = rs.getString("nim");
                 String resultNama = rs.getString("nama");
-                int resultTahun = rs.getInt("tahun_masuk");
-                Mahasiswa mhs = new Mahasiswa(resultNim, resultNama, resultTahun);
+                Mahasiswa mhs = new Mahasiswa(resultNim, resultNama);
 
                 listMahasiswa.add(mhs);
             }
@@ -61,11 +59,10 @@ public class HandlerMahasiswa {
     public static boolean updateDB(Mahasiswa mhs) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "update mahasiswa set nama = ?, tahun_masuk = ? where nim = ?";
+            String sql = "update mahasiswa set nama = ? where nim = ?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, mhs.nama);
-            ps.setInt(2, mhs.tahunMasuk);
-            ps.setString(3, mhs.nim);
+            ps.setString(2, mhs.nim);
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected > 0) {

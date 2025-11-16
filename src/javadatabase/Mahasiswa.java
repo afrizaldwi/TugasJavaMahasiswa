@@ -8,12 +8,10 @@ public class Mahasiswa {
 
     public String nim;
     public String nama;
-    public int tahunMasuk;
 
-    public Mahasiswa(String nim, String nama, int tahunMasuk) {
+    public Mahasiswa(String nim, String nama) {
         this.nim = nim;
         this.nama = nama;
-        this.tahunMasuk = tahunMasuk;
 
     }
 
