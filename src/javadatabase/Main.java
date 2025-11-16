@@ -4,9 +4,16 @@
  */
 package javadatabase;
 
+import java.io.BufferedReader;
 import java.util.List;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import java.io.File;
+import java.io.FileReader;
+import java.sql.Connection;
+import java.util.ArrayList;
 
 /**
  *
@@ -15,8 +22,9 @@ import javax.swing.table.DefaultTableModel;
 public class Main extends javax.swing.JFrame {
 
     private DefaultTableModel model;
-    private HandlerMahasiswa handler = new HandlerMahasiswa();
-    boolean isEdit;
+    private HandlerMahasiswa handler;
+    private List<Mahasiswa> listMahasiswa;
+    private boolean isEdit;
 
     /**
      * Creates new form Main
@@ -24,8 +32,15 @@ public class Main extends javax.swing.JFrame {
     public Main() {
         initComponents();
         String[] column = {"NIM", "Nama"};
-        model = new DefaultTableModel(column, 0);
+        model = new DefaultTableModel(column, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tblMahasiswa.setModel(model);
+        listMahasiswa = new ArrayList<Mahasiswa>();
+        handler = new HandlerMahasiswa(DBConnection.getConnection());
 
         loadData();
 
@@ -52,6 +67,58 @@ public class Main extends javax.swing.JFrame {
         txtNIM.setText("");
     }
 
+    private void openFileChooser() {
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Tambahkan file CSV");
+
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files", "csv"));
+
+        int userSelection = fileChooser.showOpenDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToImport = fileChooser.getSelectedFile();
+
+            loadDataFromCSV(fileToImport);
+
+            JOptionPane.showMessageDialog(rootPane, "Data berhasil di import");
+
+        }
+    }
+
+    private void loadDataFromCSV(File csvFile) {
+        String line;
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(csvFile));
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(";");
+
+                if (data.length == 2) {
+                    String nim = data[0];
+                    String nama = data[1];
+
+                    Mahasiswa mhs = new Mahasiswa(nim, nama);
+
+                    listMahasiswa.add(mhs);
+
+                    model.addRow(new Object[]{mhs.nim, mhs.nama});
+                }
+            }
+
+            handler.createListDB(listMahasiswa);
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            // Even better, tell the user:
+            JOptionPane.showMessageDialog(this,
+             "Gagal memuat file: " + e.getMessage(),
+             "Error",
+             JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -70,6 +137,7 @@ public class Main extends javax.swing.JFrame {
         btnDelete = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblMahasiswa = new javax.swing.JTable();
+        btnImportCSV = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -116,8 +184,23 @@ public class Main extends javax.swing.JFrame {
             new String [] {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(tblMahasiswa);
+
+        btnImportCSV.setText("import CSV");
+        btnImportCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnImportCSVActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -125,13 +208,6 @@ public class Main extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnDelete)
-                        .addGap(16, 16, 16)
-                        .addComponent(btnEdit)
-                        .addGap(16, 16, 16)
-                        .addComponent(btnSubmit))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(80, 80, 80)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -143,7 +219,16 @@ public class Main extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 64, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(txtNama, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-                                    .addComponent(txtNIM))))))
+                                    .addComponent(txtNIM)))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnImportCSV)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnDelete)
+                        .addGap(16, 16, 16)
+                        .addComponent(btnEdit)
+                        .addGap(16, 16, 16)
+                        .addComponent(btnSubmit)))
                 .addGap(80, 80, 80))
         );
         layout.setVerticalGroup(
@@ -161,13 +246,15 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSubmit)
                     .addComponent(btnEdit)
-                    .addComponent(btnDelete))
-                .addGap(48, 48, 48)
+                    .addComponent(btnDelete)
+                    .addComponent(btnImportCSV))
+                .addGap(64, 64, 64)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(80, 80, 80))
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtNamaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNamaActionPerformed
@@ -244,6 +331,11 @@ public class Main extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnDeleteActionPerformed
 
+    private void btnImportCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImportCSVActionPerformed
+        // TODO add your handling code here:
+        openFileChooser();
+    }//GEN-LAST:event_btnImportCSVActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -282,6 +374,7 @@ public class Main extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnEdit;
+    private javax.swing.JButton btnImportCSV;
     private javax.swing.JButton btnSubmit;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblNIM;

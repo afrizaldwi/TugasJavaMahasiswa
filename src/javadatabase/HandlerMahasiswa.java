@@ -17,16 +17,20 @@ import java.util.List;
  */
 public class HandlerMahasiswa {
 
-    public static boolean createDB(Mahasiswa mhs) {
+    private Connection conn;
+
+    public HandlerMahasiswa(Connection conn) {
+        this.conn = conn;
+    }
+
+    public boolean createDB(Mahasiswa mhs) {
         try {
-            Connection conn = DBConnection.getConnection();
             String sql = "insert into mahasiswa (nim, nama) values (?, ?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, mhs.nim);
             ps.setString(2, mhs.nama);
             ps.executeUpdate();
             System.out.println("Data untuk NIM " + mhs.nim + " berhasil ditambahkan.");
-            conn.close();
             return true;
         } catch (SQLException e) {
             System.out.println("Gagal menambahkan data: " + e.getMessage());
@@ -34,11 +38,10 @@ public class HandlerMahasiswa {
         }
     }
 
-    public static List<Mahasiswa> readDB() {
+    public List<Mahasiswa> readDB() {
         List<Mahasiswa> listMahasiswa = new ArrayList<>();
         String sql = "select * from mahasiswa order by nim asc";
         try {
-            Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
@@ -49,16 +52,14 @@ public class HandlerMahasiswa {
 
                 listMahasiswa.add(mhs);
             }
-            conn.close();
         } catch (SQLException e) {
             System.out.println("Gagal membaca data: " + e.getMessage());
         }
         return listMahasiswa;
     }
 
-    public static boolean updateDB(Mahasiswa mhs) {
+    public boolean updateDB(Mahasiswa mhs) {
         try {
-            Connection conn = DBConnection.getConnection();
             String sql = "update mahasiswa set nama = ? where nim = ?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, mhs.nama);
@@ -78,9 +79,8 @@ public class HandlerMahasiswa {
         }
     }
 
-    public static void deleteDB(String nim) {
+    public void deleteDB(String nim) {
         try {
-            Connection conn = DBConnection.getConnection();
             String sql = "delete from mahasiswa where nim = ?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, nim);
@@ -91,9 +91,27 @@ public class HandlerMahasiswa {
             } else {
                 System.out.println("Gagal menghapus: Data dengan NIM " + nim + " tidak ditemukan.");
             }
-            conn.close();
         } catch (SQLException e) {
             System.out.println("Gagal menghapus data: " + e.getMessage());
         }
+    }
+
+    public void createListDB(List<Mahasiswa> listMahasiswa) {
+        String sql = "insert into mahasiswa (nim, nama) values (?, ?)";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            for (Mahasiswa mhs : listMahasiswa) {
+                ps.setString(1, mhs.nim);
+                ps.setString(2, mhs.nama);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+        } catch (Exception e) {
+            System.out.println("Gagal menambahkan data: " + e.getMessage());
+        }
+
     }
 }
